@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      # Dummy values: lib/env.ts validates at boot; nothing here is a real secret.
+      BETTER_AUTH_SECRET: ci-better-auth-secret-0123456789abcdef
+      IP_HASH_SECRET: ci-ip-hash-secret-0123456789abcdefghijk
+      CRON_SECRET: ci-cron-secret-0123456789abcdefghijklmn
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: cp .env.example .env.local
+      - run: pnpm audit --prod --audit-level high
+      - run: pnpm verify

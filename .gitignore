@@ -1,0 +1,60 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# next.js / build
+.next/
+out/
+build/
+dist/
+next-env.d.ts
+*.tsbuildinfo
+
+# env — never commit secrets
+.env
+.env.*
+!.env.example
+
+# testing
+coverage/
+playwright-report/
+test-results/
+blob-report/
+.playwright/
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# local data (docker volumes, uploads)
+.data/
+docker-data/
+backups/
+
+# vercel
+.vercel/
+
+# Development docs and agent config stay local; only README.md (and LICENSE) are published.
+*.md
+!README.md
+.claude/
+
+# embed loader output (built by `pnpm build` from embed-loader/)
+public/embed.js
+public/embed.js.map
+
+# other lockfiles (we use pnpm)
+package-lock.json
+yarn.lock
+
+# private strategy docs (never published)
+internal/

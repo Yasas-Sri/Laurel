@@ -1,0 +1,84 @@
+# Local development services. `pnpm db:up` starts them and waits until they are healthy.
+# Credentials match .env.example and are for local use only.
+name: laurel
+
+services:
+  postgres:
+    image: postgres:18.6-alpine
+    environment:
+      POSTGRES_USER: laurel
+      POSTGRES_PASSWORD: laurel
+      POSTGRES_DB: laurel
+    ports: ["5432:5432"]
+    volumes: [postgres-data:/var/lib/postgresql]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U laurel -d laurel"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  # Integration tests only (TEST_DATABASE_URL). In-memory, so it starts empty every time.
+  postgres-test:
+    image: postgres:18.6-alpine
+    environment:
+      POSTGRES_USER: laurel
+      POSTGRES_PASSWORD: laurel
+      POSTGRES_DB: laurel_test
+    ports: ["5433:5432"]
+    tmpfs: [/var/lib/postgresql]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U laurel -d laurel_test"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  # S3-compatible storage (ADR 0004). API on :9000, console on :9001.
+  rustfs:
+    image: rustfs/rustfs:1.0.3
+    environment:
+      RUSTFS_ACCESS_KEY: laurel
+      RUSTFS_SECRET_KEY: laurelsecret
+      RUSTFS_CONSOLE_ENABLE: "true"
+    ports: ["9000:9000", "9001:9001"]
+    volumes: [rustfs-data:/data]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9000/health"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  # One-shot: creates both buckets and makes only the public one anonymously readable.
+  rustfs-init:
+    image: amazon/aws-cli:2.38.2
+    depends_on:
+      rustfs:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: laurel
+      AWS_SECRET_ACCESS_KEY: laurelsecret
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ENDPOINT_URL: http://rustfs:9000
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        for bucket in laurel-private laurel-public; do
+          aws s3api head-bucket --bucket "$$bucket" 2>/dev/null || aws s3api create-bucket --bucket "$$bucket"
+        done
+        aws s3api put-bucket-policy --bucket laurel-public --policy '{
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": ["s3:GetObject"],
+            "Resource": ["arn:aws:s3:::laurel-public/*"]
+          }]
+        }'
+        echo "buckets ready"
+
+  mailpit:
+    image: axllent/mailpit:v1.31.6
+    ports: ["1025:1025", "8025:8025"]
+
+volumes:
+  postgres-data:
+  rustfs-data:

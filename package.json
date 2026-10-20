@@ -1,0 +1,44 @@
+{
+  "name": "laurel",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@12.14.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:e2e": "echo 'test:e2e: not set up yet (M0 Playwright task)' && exit 1",
+    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm build",
+    "db:up": "docker compose up -d --wait",
+    "db:generate": "echo 'db:generate: not set up yet (M0 Drizzle task)' && exit 1",
+    "db:migrate": "echo 'db:migrate: not set up yet (M0 Drizzle task)' && exit 1",
+    "db:seed": "echo 'db:seed: not set up yet (M0 Drizzle task)' && exit 1"
+  },
+  "dependencies": {
+    "next": "16.4.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "server-only": "0.0.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "10.13.0",
+    "eslint-config-next": "16.4.2",
+    "eslint-config-prettier": "10.1.8",
+    "prettier": "3.9.10",
+    "typescript": "6.0.3",
+    "vitest": "5.0.5"
+  }
+}
